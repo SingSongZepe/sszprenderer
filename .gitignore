@@ -1,3 +1,6 @@
 
 # ignore .vs
-**/.vs/
+**/.vs
+
+# ignore build
+**/x64
