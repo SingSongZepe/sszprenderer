@@ -4,3 +4,6 @@
 
 # ignore build
 **/x64
+
+# ignore ref zip
+**/*.zip
