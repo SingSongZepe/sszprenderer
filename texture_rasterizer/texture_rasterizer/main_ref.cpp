@@ -77,7 +77,7 @@ Vec3f world2screen(Vec3f v) {
     return Vec3f(int((v.x+1.)*width/2.+.5), int((v.y+1.)*height/2.+.5), v.z);
 }
 
-int main1(int argc, char** argv) {
+int main2(int argc, char** argv) {
     if (2==argc) {
         model = new Model(argv[1]);
     } else {

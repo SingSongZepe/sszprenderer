@@ -1,6 +1,8 @@
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
+#include "geometry.h"
+
 #include <fstream>
 
 #pragma pack(push,1)
@@ -21,10 +23,12 @@ struct TGA_Header {
 #pragma pack(pop)
 
 
-
-struct TGAColor {
-	union {
-		struct {
+struct TGAColor 
+{
+	union 
+	{
+		struct 
+		{
 			unsigned char b, g, r, a;
 		};
 		unsigned char raw[4];
@@ -56,6 +60,32 @@ struct TGAColor {
 			val = c.val;
 		}
 		return *this;
+	}
+
+	TGAColor operator*(float k)
+	{
+		return TGAColor(r * k, g * k, b * k, a);
+	}
+	TGAColor operator+(const TGAColor& c)
+	{ // we do nothing on alpha channel
+		return TGAColor(r + c.r, g + c.g, b + c.b, a);
+	}
+	TGAColor& operator+=(const TGAColor& c)
+	{
+		return *this = *this + c;
+	}
+	
+	Vec3i to_vec3()
+	{
+		return Vec3i(r, g, b);
+	}
+
+	template <typename t>
+	static TGAColor from_Vec3(Vec3<t> vec)
+	{
+		return TGAColor{
+			(unsigned char)vec.u, (unsigned char)vec.v, (unsigned char)vec.w, 255
+		};
 	}
 };
 

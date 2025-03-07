@@ -20,7 +20,14 @@ struct Vec2
 	Vec2 operator+(const Vec2& v) const { return Vec2(u + v.u, v + v.v); }
 	Vec2 operator-(const Vec2& v) const { return Vec2(u - v.u, v - v.v); }
 	Vec2 operator-() const { return Vec2(-x, -y); };
-	Vec2 operator*(float s) const { return Vec2(u * s, v * s); }
+	Vec2 operator*(float s) const { return Vec2(u * s, v * s); };
+
+	Vec2& operator+=(const Vec2& vec) 
+	{
+		u += vec.u; 
+		v += vec.v;
+		return *this;
+	}
 	t& operator[](int idx) { return raw[idx]; }
 
 	friend std::ostream& operator<<(std::ostream& s, Vec2& v) {
@@ -48,6 +55,24 @@ struct Vec3
 	Vec3 operator-(const Vec3& vec) const { return Vec3(u - vec.u, v - vec.v, w - vec.w); }
 	Vec3 operator-() const { return Vec3(-x, -y, -z); };
 	Vec3 operator*(float s) const { return Vec3(u * s, v * s, w * s); };
+	Vec3 operator/(float s) const { 
+		if (s == 0)
+		{
+			throw std::runtime_error("can't divide by 0");
+		}
+		return Vec3(u / s, v / s, w / s); 
+	};
+	Vec3 operator*(const Vec3& vec)
+	{
+		return Vec3(u * vec.u, v * vec.v, w * vec.w);
+	}
+	Vec3& operator+=(const Vec3& vec)
+	{
+		u += vec.u;
+		v += vec.v;
+		w += vec.w;
+		return *this;
+	}
 	bool operator==(const Vec3& vec) const { return u == vec.u && v == vec.v && w == vec.w; }
 	t& operator[](int idx) { return raw[idx]; }
 
@@ -81,6 +106,27 @@ struct Vec3
 	Vec4<t> to_homogeneous_vector()
 	{
 		return Vec4<t>(x, y, z, t{ 0. });
+	}
+
+	Vec3<float> to_vec3f() const
+	{
+		return Vec3<float>{ (float)u, (float)v, (float)w };
+	}
+	float distance_to(const Vec3& vec) const
+	{
+		return std::sqrt((x - vec.x) * (x - vec.x) + (y - vec.y) * (y - vec.y) + (z - vec.z) * (z - vec.z));
+	}
+	float distance_squared_to(const Vec3& vec) const
+	{
+		return std::sqrt((x - vec.x) * (x - vec.x) + (y - vec.y) * (y - vec.y) + (z - vec.z) * (z - vec.z));
+	}
+	Vec3 bitwise_min(const Vec3& vec) const
+	{
+		return Vec3{
+			std::min(u, vec.u),
+			std::min(v, vec.v),
+			std::min(w, vec.w),
+		};
 	}
 };
 
@@ -234,6 +280,7 @@ typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
 typedef Vec4<float> Vec4f;
 typedef Vec4<int> Vec4i;
+
 
 typedef Mat<float, 4, 4> Mat4f;
 
