@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
 	if (argc != 2)
 	{
-		model = new Model("obj/african_head/african_head.obj");
+		model = new Model("obj/bunny.obj");
 	}
 	else
 	{
@@ -49,6 +49,7 @@ int main(int argc, char** argv)
 	
 	for (int i = 0; i < model->nfaces(); i++)
 	{
+		printf("%d\n", i);
 		std::vector<int> face = model->face(i);
 		Vec3f* points = new Vec3f[3];
 

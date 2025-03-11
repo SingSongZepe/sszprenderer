@@ -7,12 +7,12 @@ const TGAColor WHITE = TGAColor(255, 255, 255, 255);
 const TGAColor RED = TGAColor(255, 0, 0, 255);
 
 // view
-//View view = View();
+View view = View();
 
-Vec3f eye_position = Vec3f{ 1., 1., 1. };
-Vec3f gaze_dir = Vec3f{ -1., -1., -1. };
-Vec3f up_dir = Vec3f{ -1., 2., -1. };
-View view{ eye_position, gaze_dir, up_dir };
+//Vec3f eye_position = Vec3f{ 1., 1., 1. };
+//Vec3f gaze_dir = Vec3f{ -1., -1., -1. };
+//Vec3f up_dir = Vec3f{ -1., 2., -1. };
+//View view{ eye_position, gaze_dir, up_dir };
 
 // model
 extern Model* model = nullptr;
