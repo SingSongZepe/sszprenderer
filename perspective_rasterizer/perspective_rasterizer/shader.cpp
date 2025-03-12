@@ -1,9 +1,10 @@
 #include "shader.h"
 
-TGAColor texture_fragment_shader(FragmentShaderPayload& payload)
+Vec3f texture_fragment_shader(const FragmentShaderPayload& payload)
 { // use a model to render the texture
-
-	Vec3f& space_coord = payload.space_coord;
+	
+	Vec4f tmp = payload.space_coord;
+	Vec3f space_coord = tmp.to_normal_pos_vec();
 	
 	Vec3f view_dir = (view.e - space_coord).normalized();
 	Vec3f normal_dir = payload.normal;
@@ -32,5 +33,5 @@ TGAColor texture_fragment_shader(FragmentShaderPayload& payload)
 		result_color += diffuse_term + specular_term + ambient_term;
 	}
 
-	return TGAColor::from_Vec3((result_color).bitwise_min(Vec3f{ 255., 255., 255. }));
+	return result_color.bitwise_min(Vec3f{ 255., 255., 255. });
 }

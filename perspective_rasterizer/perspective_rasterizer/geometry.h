@@ -147,7 +147,14 @@ struct Vec4
 	Vec4 operator-(const Vec4& v) const { return Vec4(u - v.u, v - v.v, w - v.w, w_ - v.w_); }
 	Vec4 operator*(float s) const { return Vec4(u * s, v * s, w * s, w_ * s); }
 	t& operator[](int idx) { return raw[idx]; }
-
+	Vec4& operator+=(const Vec4& vec)
+	{
+		u += vec.u;
+		v += vec.v;
+		w += vec.w;
+		w_ += vec.w_;
+		return *this;
+	}
 
 	friend std::ostream& operator<<(std::ostream& s, Vec4& v) {
 		s << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w_ << ")\n";
@@ -226,7 +233,7 @@ struct Mat
 			s << "]";
 			if (i < nr - 1) s << ",\n";
 		}
-		s << "]";
+		s << "]\n";
 		return s;
 	}
 	

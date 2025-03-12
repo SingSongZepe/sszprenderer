@@ -8,67 +8,12 @@
 #include "triangle.h"
 #include "texture.h"
 #include "rasterizer.h"
+#include "matrix_maker.h"
 
 #include <cmath>
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-
-const double PI = 3.14159265358979323846;
-
-// the angle is in degrees, and rotates counterclockwise around y-axis
-Mat4f make_model_matrix(const float& angle) noexcept
-{
-	Mat4f rotate = Mat4f::zeros<float, 4>();
-	float angle_rad = angle * PI / 180.;
-	rotate[0][0] = cos(angle_rad);
-	rotate[0][2] = sin(angle_rad);
-	rotate[1][1] = 1.;
-	rotate[2][0] = -sin(angle_rad);
-	rotate[2][2] = cos(angle_rad);
-	rotate[3][3] = 1.;
-
-	Mat4f scale = Mat4f::zeros<float, 4>();
-	rotate[0][0] = 2.5;
-	rotate[1][1] = 2.5;
-	rotate[2][2] = 2.5;
-	rotate[3][3] = 1.;
-
-	Mat4f translate = Mat4f::identity<float, 4>();
-
-	return translate * rotate * scale;
-}
-
-Mat4f make_view_matrix(const View& view) noexcept
-{
-	return view.view_mat;
-}
-
-// where the n is the near clipping space, f is the far clipping space
-// aspect_ratio = w / h;
-Mat4f make_projection_matrix(float fov, float aspect_ratio, float n, float f)
-{
-	float fov_rad = fov * PI / 180;
-
-	float h = 2 * tan(fov_rad / 2) * n;
-	float w = h * aspect_ratio;
-
-	Mat4f orthorgraphic = Mat4f::zeros<float, 4>();
-	orthorgraphic[0][0] = 1 / w;
-	orthorgraphic[1][1] = 1 / h;
-	orthorgraphic[2][2] = 1 / (f - n);
-	orthorgraphic[2][3] = -(f + n) / 2. / (f - n);
-	orthorgraphic[3][3] = 1;
-
-	Mat4f perspec2ortho = Mat4f::zeros<float, 4>();
-	perspec2ortho[0][0] = n;
-	perspec2ortho[1][1] = n;
-	perspec2ortho[2][2] = f + n;
-	perspec2ortho[2][3] = -n * f;
-	perspec2ortho[3][2] = 1;
-
-	return orthorgraphic * perspec2ortho;
-}
 
 int main(int argc, char** argv)
 {
@@ -83,39 +28,43 @@ int main(int argc, char** argv)
 		texture = new Texture("obj/african_head/african_head_diffuse.tga");
 	}                                                                                                                                                            
 
-	std::vector<Triangle> tri_list;
+	std::vector<Triangle*> tri_list;
 
 	// rearrange data into triangles
 	for (int i = 0; i < model->nfaces(); i++)
 	{
+		//std::cout << i << std::endl;
 		std::vector<int> face = model->face(i);
-		Triangle tri;
-		tri.set_vertices(model->vert(face[0]).to_homogeneous_point(),
-			model->vert(face[1]).to_homogeneous_point(),
-			model->vert(face[2]).to_homogeneous_point());
+		Triangle* tri = new Triangle();
 
-		tri.set_normals(model->normal(face[0]),
-			model->normal(face[1]),
-			model->normal(face[2]));
+		int j = 0;
+		tri->set_vertices(model->vert(face[j++]).to_homogeneous_point(),
+			model->vert(face[j++]).to_homogeneous_point(),
+			model->vert(face[j++]).to_homogeneous_point());
+		
+		tri->set_tex_coords(model->tex_coord(face[j++]),
+			model->tex_coord(face[j++]),
+			model->tex_coord(face[j++]));
 
-		tri.set_tex_coords(model->tex_coord(face[0]),
-			model->tex_coord(face[1]),
-			model->tex_coord(face[2]));
+		tri->set_normals(model->normal(face[j++]),
+			model->normal(face[j++]),
+			model->normal(face[j++]));
 
 		tri_list.push_back(tri);
 	}
 
-	Rasterizer* rasterizer = new Rasterizer(WIDTH, HEIGHT);
+	TGAImage* image = new TGAImage(WIDTH, HEIGHT, TGAImage::RGB);
+	Rasterizer* rasterizer = new Rasterizer(WIDTH, HEIGHT, image);
 
 	// model matrix
-	float ROTATE_ANGLE = 145;
+	float ROTATE_ANGLE = 0.;
 	rasterizer->set_model(make_model_matrix(ROTATE_ANGLE));
 
 	// view matrix
 	rasterizer->set_view(make_view_matrix(view));
 
 	// projection matrix
-	float fov = 90;
+	float fov = 45;
 	float aspect_ratio = WIDTH / HEIGHT;
 	float n = 0.1;
 	float f = 100;
@@ -123,8 +72,13 @@ int main(int argc, char** argv)
 
 	rasterizer->set_texture(texture);
 
-	rasterizer->set_fragment_shader();
+	rasterizer->set_fragment_shader(&texture_fragment_shader);
 
+	//void Rasterizer::draw(std::vector<Triangle*>&tri_list)
+	rasterizer->draw(tri_list);
+
+	// write the img into a file
+	rasterizer->save_image();
 
 	delete model;
 	delete rasterizer;

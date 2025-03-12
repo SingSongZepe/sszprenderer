@@ -11,7 +11,7 @@ public:
 		: color(color), normal(normal), tex_coord(tex_coord), texture(texture) {};
 
 	// the position in camera space
-	Vec3f space_coord;
+	Vec4f space_coord;
 	TGAColor color;
 	Vec3f normal;
 	Vec2f tex_coord;

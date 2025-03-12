@@ -18,6 +18,9 @@ public:
 		width = w;
 		height = h;
 		image = img;
+
+		// zbuffer
+		depth_buf = std::vector<float>(w * h, -std::numeric_limits<float>::infinity());
 	}
 	
 	void set_model(const Mat4f& m);
@@ -35,8 +38,10 @@ public:
 
 	void save_image();
 
+	void clear_buf();
+
 private:
-	void draw_triangle(const Triangle& tri);
+	void draw_triangle(const Triangle& tri, const Vec4f* space_coords);
 
 private:
 	Mat4f model;
@@ -51,7 +56,7 @@ private:
 	//std::function<Vec3f(VertexShaderPayload)> vertex_shader;
 
 	std::vector<Vec3f> fragment_buf;
-	std::vector<Vec3f> depth_buf;
+	std::vector<float> depth_buf;
 
 	int get_index(int x, int y);
 

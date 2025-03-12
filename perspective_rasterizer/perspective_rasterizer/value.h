@@ -15,7 +15,6 @@ extern const TGAColor RED;
 // define the view
 extern View view;
 
-
 // model
 extern Model* model;
 

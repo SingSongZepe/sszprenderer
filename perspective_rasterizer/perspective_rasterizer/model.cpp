@@ -53,7 +53,7 @@ Model::Model(const char *filename) : verts_(), faces_() {
                 vt_idx--;
                 n_idx--;
                 f.push_back(idx);
-                vts.push_back(vt_idx);
+				vts.push_back(vt_idx);
                 norms.push_back(n_idx);
             }
             for (const int& vt : vts)

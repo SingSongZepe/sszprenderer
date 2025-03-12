@@ -5,6 +5,21 @@
 #include <array>
 #include <algorithm>
 
+// barycentric coords
+Vec3f barycentric_coord(Vec3f* points, Vec3f& p)
+{
+    // (u, v, 1) = cross_product([p0p1x, p0p2x, pp0x], [p0p1y, p0p2y, pp0y])
+    Vec3f u = Vec3f(points[1].x - points[0].x, points[2].x - points[0].x, points[0].x - p.x)
+        .cross_product(Vec3f(points[1].y - points[0].y, points[2].y - points[0].y, points[0].y - p.y));
+
+    // when triangle degenerate to a line
+    if (std::abs(u.z) < 1e-2)
+    {
+        return Vec3f(-1., 1., 1.);
+    }
+    return Vec3f(1.f - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z);
+}
+
 void Rasterizer::set_model(const Mat4f& m)
 {
 	model = m;
@@ -61,8 +76,10 @@ void Rasterizer::draw(std::vector<Triangle*>& tri_list)
 
 	Mat4f mvp = projection * view * model;
 
+    //int i = 0;
 	for (const Triangle* tri : tri_list)
 	{
+        //printf("%d\n", i++);
 		Triangle tri_to_draw = Triangle();
 
 		//std::array<Vec3f, 3> viewspace_pos{
@@ -79,18 +96,18 @@ void Rasterizer::draw(std::vector<Triangle*>& tri_list)
 
 		for (auto& vert : v)
 		{
-			vert.x /= vert.w;
-			vert.y /= vert.w;
-			vert.z /= vert.w;
-			vert.w = 1.;
+			vert.x /= vert.w_;
+			vert.y /= vert.w_;
+			vert.z /= vert.w_;
+			vert.w_ = 1.;
 		}
 
 		//vert.x() = 0.5 * width * (vert.x() + 1.0);
 		// viewport transformation
 		for (auto& vert : v)
 		{
-			vert.x = (vert.x + 1.) * width * 0.5 - 0.5;
-			vert.y = (vert.y + 1.) * height * 0.5 - 0.5;
+			vert.x = int((vert.x + 1.) * width * 0.5 - 0.5);
+			vert.y = int((vert.y + 1.) * height * 0.5 - 0.5);
 			vert.z = f1 * vert.z + f2;
 		}
 
@@ -99,29 +116,15 @@ void Rasterizer::draw(std::vector<Triangle*>& tri_list)
 		tri_to_draw.set_tex_coords(tri->tex_coords[0], tri->tex_coords[1], tri->tex_coords[2]);
 		tri_to_draw.set_colors(tri->colors[0], tri->colors[1], tri->colors[2]);
 		
-		draw_triangle(tri_to_draw);
+		draw_triangle(tri_to_draw, tri->vertices);
 	}
 }
 
-// barycentric coords
-Vec3f barycentric_coord(Vec3f* points, Vec3f& p)
+void Rasterizer::draw_triangle(const Triangle& tri, const Vec4f* space_coords)
 {
-    // (u, v, 1) = cross_product([p0p1x, p0p2x, pp0x], [p0p1y, p0p2y, pp0y])
-    Vec3f u = Vec3f(points[1].x - points[0].x, points[2].x - points[0].x, points[0].x - p.x)
-        .cross_product(Vec3f(points[1].y - points[0].y, points[2].y - points[0].y, points[0].y - p.y));
+    //TGAColor random_color = TGAColor::from_Vec3(Vec3f(rand() % 255, rand() % 255, rand() % 255));
 
-    // when triangle degenerate to a line
-    if (std::abs(u.z) < 1e-2)
-    {
-        return Vec3f(-1., 1., 1.);
-    }
-    return Vec3f(1.f - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z);
-}
-
-
-void Rasterizer::draw_triangle(const Triangle& tri)
-{
-	Vec3f* screen_points = new Vec3f;
+	Vec3f* screen_points = new Vec3f[3];
 	screen_points[0] = Vec3f{ tri.vertices[0].x, tri.vertices[0].y, tri.vertices[0].z };
 	screen_points[1] = Vec3f{ tri.vertices[1].x, tri.vertices[1].y, tri.vertices[1].z };
 	screen_points[2] = Vec3f{ tri.vertices[2].x, tri.vertices[2].y, tri.vertices[2].z };
@@ -160,27 +163,29 @@ void Rasterizer::draw_triangle(const Triangle& tri)
                 Vec2f tex_coord{};
                 for (int i = 0; i < 3; i++)
                 {
-                    tex_coord += tex_coords[i] * barycentroid[i];
+                    tex_coord += tri.tex_coords[i] * barycentroid[i];
                 }
 
                 // get interpolated normal
                 Vec3f normal{};
                 for (int i = 0; i < 3; i++)
                 {
-                    normal += normals[i] * barycentroid[i];
+                    normal += tri.normals[i] * barycentroid[i];
                 }
 
-                Vec3f space_coord{};
+                Vec4f space_coord{};
                 for (int i = 0; i < 3; i++)
                 {
-                    space_coord += points[i] * barycentroid[i];
+                    space_coord += space_coords[i] * barycentroid[i];
                 }
 
                 // construct the fragment shader payload
-                FragmentShaderPayload payload{ TGAColor{0, 0, 0, 0}, normal, tex_coord, texture };
+                FragmentShaderPayload payload{ TGAColor{0, 0, 0, 0}, normal, tex_coord, texture.has_value() ? &texture.value() : nullptr };
                 payload.space_coord = space_coord;
 
-                image->set(p.x, p.y, TGAColor::from_Vec3(fragment_shader(payload)));
+                TGAColor color = TGAColor::from_Vec3(fragment_shader(payload));
+
+                image->set(p.x, p.y, color);
             }
         }
     }

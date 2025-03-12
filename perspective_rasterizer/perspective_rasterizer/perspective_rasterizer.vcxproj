@@ -141,6 +141,8 @@
   <ItemGroup>
     <ClCompile Include="fragment_payload.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="matrix_maker.cpp" />
+    <ClCompile Include="matrix_maker.h" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="rasterizer.cpp" />
     <ClCompile Include="rasterizer.h" />

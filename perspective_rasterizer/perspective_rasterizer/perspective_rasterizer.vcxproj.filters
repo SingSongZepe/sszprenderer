@@ -74,5 +74,11 @@
     <ClCompile Include="shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="matrix_maker.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix_maker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
